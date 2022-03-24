@@ -2,8 +2,8 @@ from typer.testing import CliRunner
 
 
 from commands.auth import app
-from commands.auxiliar.json_file import get_value,set_value
-from config import FILE_NAME
+from commands.utils.json_file import get_value,set_value
+from config import CONFIG_FILE_NAME
 
 
 runner = CliRunner()

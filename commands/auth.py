@@ -2,27 +2,50 @@ from typing import Optional
 import requests
 import typer
 from datetime import datetime
+from commands.providers import get_providers, pick_provider
 
 
 from config import URL
-from .auxiliar.json_file import get_value,set_value
-from commands.auxiliar.errors import APIConnectionError
-from commands.auxiliar.colors import success_message,warning_message,error_message
+from commands.utils.json_file import get_value,set_value
+from commands.utils.errors import APIConnectionError, NotAPIKey,TimeOutSession
+from commands.utils.colors import success_message,error_message, warning_message
 
-app = typer.Typer(help="Login into your bank account 🏦")
+app = typer.Typer(help="Login/logout into your bank account 🏦")
 
+def get_session_key(provider:Optional[str]="")->str:
+    """ Get the session key by a specific bank code"""
+    try:
+        session = get_value('sessions')
+        key = auth_wrapper(
+            session[provider]['username'],
+            session[provider]['password'],
+            provider
+        )
+        return key
+    except APIConnectionError as e :
+        error_message(e)
+        typer.Exit()
 
 def check_session(provider:str)->bool:
-    accounts=get_value('accounts')
-    bank_info= accounts.get(provider,None)
-    current_time = datetime.now()
-    if(bank_info):
-        session_time = (current_time-datetime.fromisoformat(bank_info['time'])).total_seconds()/60
-        if(session_time<5):
-            return True
-    return False
+    """
+        Validate if session is still open and return a boolean based on it. 
+        5 minutes per session key.
+    """
+    try:
+        sessions=get_value('sessions')
+        bank_info= sessions.get(provider,None)
+        current_time = datetime.now()
+        if(bank_info):
+            session_time = (current_time-datetime.fromisoformat(bank_info['time'])).total_seconds()/60
+            if(session_time<5):
+                return True
+        raise TimeOutSession()
+    except Exception as e:
+        return False
+        #error_message(e)
 
-def authentication(username:str,password:str,code:str)->None:
+def authentication(username:str,password:str,code:str)->str:
+    """Login API call login. Return the session key"""
     try:
         key = get_value('API_KEY')
         r = requests.post(
@@ -37,40 +60,42 @@ def authentication(username:str,password:str,code:str)->None:
         if(r.status_code!=200):
             raise APIConnectionError(r.json().get('message','Cannot login, try again'))
         session_key = r.json()['key']
-        set_value('accounts',{
+        set_value('sessions',{
             code:{
                 'username':username,
                 'password':password,
                 'key':session_key,
                 'time':str(datetime.now())
         }})
-        success_message("Login successful")
+        return session_key
     except APIConnectionError as e:  
         error_message(e)
         raise typer.Exit()
     
-#Arreglarse si tiene más de una cuenta por banco
-def auth_wrapper(username:str,password:str,provider:str)->None:
+def auth_wrapper(username:str,password:str,provider:str)->str:
+    """Execute the authentication related functions. Return the session key"""
     if(not check_session(provider)):
-        authentication(username,password,provider)
-        return
-    warning_message("You have an actual session on this bank")
+        return authentication(username,password,provider)
+    provider_info = get_value('sessions').get(provider,None)
+    return provider_info['key']
+    #warning_message("You have an actual session on this bank")
 
 @app.command("login")
 def login(
     username:Optional[str]=typer.Option(...,"--user","-u",help="Bank username",prompt="Please write your user"),
     password: Optional[str]=typer.Option(...,"--pass","-p",help="Bank password",prompt="Please write your pass",hide_input=True),
-    code : Optional[str]=typer.Option(...,'--code','-c',help="Bank code",prompt="Please write the bank code")
+    code : Optional[str]=typer.Option('','--code','-c',help="Bank code")
     )->None:
     """
         Login into your bank account. The app will save session data to easy access in other commands.\n
         Note:\n
-            Use 'providers get' to see all bank codes on Prometeo
+            Use 'providers get' to see all bank codes on Prometeo and have a faster login.
     """
+    if not code:
+        code  = pick_provider(get_providers())['code']
     auth_wrapper(username,password,code)
+    success_message("Login successful")    
 
-
-#Arreglarse si tiene más de una cuenta por banco
 
 @app.command("logout")
 def logout(
@@ -82,17 +107,21 @@ def logout(
     """
     try:
         if not all_flag:
-            accounts=get_value('accounts')
-            del accounts[bank_code]
-            set_value('accounts',accounts)
+            sessions=get_value('sessions')
+            key= sessions[bank_code]['key']
+            r=requests.get(f'{URL}logout/{key}',headers={'X-API-KEY':get_value('API_KEY')})
+            del sessions[bank_code]
+            if r.status_code!=200:
+                raise NotAPIKey
+            set_value('sessions',sessions)
         else:
-            set_value('accounts',{})
-        typer.echo("Logout successful")
-    except KeyError:
+            set_value('sessions',{})
+        success_message("Logout successful")
+    except (KeyError,NotAPIKey):
         if bank_code:
-            typer.echo("You have not login on any account in this bank")
+            warning_message("You have not login on any account in this bank")
         else:
-            typer.echo('Please specifiy in which bank do you want to logout')
+            warning_message('Please specifiy in which bank do you want to logout')
     finally:
         raise typer.Exit()
 

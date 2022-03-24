@@ -1,16 +1,21 @@
-from typing import List, Optional,Dict
-import requests
+#External libraries import
 import typer
+import requests
 from pick import pick
 from tabulate import tabulate
 
-from commands.auxiliar.errors import APIConnectionError
-from commands.auxiliar.json_file import get_value
-from commands.auxiliar.colors import error_message
+#Python imports
+from typing import List, Optional,Dict
 
-from config import URL
+#Local imports
+from commands.utils.errors import APIConnectionError
+from commands.utils.json_file import get_value, save_file
+from commands.utils.colors import error_message
 
-app = typer.Typer(help="Get a list of the bank providers")
+from config import PROVIDERS_FILE_NAME, URL
+
+
+app = typer.Typer(help="Get a list of the bank providers 🗒️")
 
 
 def get_providers(key:str="")->List[Dict[str,str]]:
@@ -23,6 +28,8 @@ def get_providers(key:str="")->List[Dict[str,str]]:
         if r.status_code!=200:
             raise APIConnectionError(r.json()['message'])
         providers = r.json()['providers']
+        save_providers_format= {provider['code']:provider for provider in providers}
+        save_file(save_providers_format,PROVIDERS_FILE_NAME)
         return providers
     except Exception as e:  
         error_message(e)
@@ -34,16 +41,16 @@ def format_provider(provider:Dict[str,str])->str:
     """
     return f"{provider.get('country')} -{provider.get('name')}"
 
-def pick_provider(providers:List[str])->Dict[str,str]:
+def pick_provider(providers:List[str],title:Optional[str]='Please select a bank provider')->Dict[str,str]:
     """
         Use pick library to select the provider
     """
-    title = 'Please select a bank provider'
-    return pick(providers,title,indicator='=>',options_map_func=format_provider)
+    return pick(providers,title,indicator='=>',options_map_func=format_provider)[0]
 
 def show_providers(country:Optional[str]="")->None:
     """
-        Show a list of the banks avaliables on Prometeo.
+        Show a list of the banks avaliable on Prometeo.
+        The list can be filtered by a country code.
     """
     providers = get_providers()
     country = country.strip().upper()
