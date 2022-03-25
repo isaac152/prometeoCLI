@@ -64,8 +64,11 @@ First of all, you need to have an API KEY from [**Prometeo**](https://prometeoap
 For now we be will using a test provider, but you can use the bank provider you want (if you have access to an account, of course).
 
 -**API KEY**: STAIRWAY TO HEAVEN
+
 -**Username**:12345
+
 -**Password**:gfdsa
+
 -**Provider**:Test provider
 
 ### **2.** Install the CLI
@@ -103,14 +106,18 @@ What makes Prometeo CLI different? I am glad you ask.
 
 **If you don't add any bank code, a list of all banks you have already session will appear**
 ![Filter providers by country](https://i.imgur.com/exnOpJ6.gif)
+
 **Then, if you don't remember the code but remember how it starts, you can write it and see the coincidences**
+
 ![Filter providers by country](https://i.imgur.com/9NMPSWY.gif)
 
 - #### **Count and reverse order in movements**
  You can set how many accounts/cards movements you want to see and you can specify the order of the output. More info is below.
 Let's see an example.
+
 **Chronological order and 8 movements**
 ![In chronological order](https://i.imgur.com/ecHuq0t.png)
+
 **Reverse Chronological order and 8 movements**
 ![In reverse chronological order](https://i.imgur.com/Txdp7BV.png)
 - #### **Colors in balance**
