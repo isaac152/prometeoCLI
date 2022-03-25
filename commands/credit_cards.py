@@ -10,6 +10,7 @@ from typing import Optional
 
 #Local imports
 from commands.utils.colors import error_message, warning_message
+from commands.utils.errors import NotTransactionalSession
 from commands.utils.json_file import get_value
 
 from commands.utils.transactional_data import DATE_FORMATS, check_file_name, movements_table_format, comparing_dates, format_selector_movements, get_movements_from_api, get_provider_code, wrapper_saving, wrapper_transactional_data
@@ -32,12 +33,16 @@ def movements(
     reverse:Optional[bool]=typer.Option(False,'-o','--order',help="Reverse chronological order.")
 )->None:
     """
-        Get a list of the movements of your credit card between two dates
+        Get a list of the movements of your credit card between two dates \n
+        Note: Please use accounts at least one time before using this command. 
+
     """
     try:
         if(comparing_dates(first_date,last_date)):
             bank = get_provider_code(bank)
             cards = get_value('credit_cards')
+            if not cards:
+                raise NotTransactionalSession('credit cards')
             provider_cards=cards[bank]
             result = pick(provider_cards,options_map_func=format_selector_movements)[0]
             
@@ -74,4 +79,4 @@ def credit_cards(
         if ctx.invoked_subcommand is None:
             wrapper_transactional_data(bank,'credit-card/','credit_cards')
     except Exception as e:
-        error_message('Please try again')
+        error_message('Please try to use the command again')

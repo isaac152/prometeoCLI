@@ -34,6 +34,7 @@ def get_provider_code(provider_code:Optional[str]="")->str:
         if(not session):
             warning_message("Please login first")
             start()
+            raise typer.Exit()
         actual_providers=[provider for provider in session.keys() if provider.startswith(provider_code)]
         if not actual_providers:
             actual_providers=session.keys()
@@ -102,6 +103,7 @@ def wrapper_transactional_data(bank:str,endpoint:str,field:str)->None:
     set_value(field,{
         provider:info
     })
+        
 
 
 def comparing_dates(start_date:datetime,end_date:datetime)->bool:

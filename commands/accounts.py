@@ -28,9 +28,9 @@ def movements(
     reverse:Optional[bool]=typer.Option(False,'-o','--order',help="Reverse chronological order.")
     )->None:
     """
-        Get a list of the movements of your account between two dates.
+        Get a list of the movements of your account between two dates.\n
 
-        Note: Please use accounts first. 
+        Note: Please use accounts at least one time before using this command. 
     """
     try:
         if(comparing_dates(first_date,last_date)):
@@ -74,4 +74,4 @@ def accounts(
         if ctx.invoked_subcommand is None:
             wrapper_transactional_data(bank,'account/','accounts')
     except Exception as e:
-        error_message('Please try again')
+        error_message('Please try to use the command again')

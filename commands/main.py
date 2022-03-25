@@ -17,5 +17,6 @@ app.add_typer(reset.app,name="uninstall")
 
 
 @app.command('version')
-def version():
+def version()->None:
+    """Print the actual Prometeo cli version"""
     echo(__version__)

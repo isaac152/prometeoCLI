@@ -77,8 +77,10 @@ def auth_wrapper(username:str,password:str,provider:str)->str:
     if(not check_session(provider)):
         return authentication(username,password,provider)
     provider_info = get_value('sessions').get(provider,None)
+    if provider_info['username']!=username:
+        warning_message("You have an actual session on this bank. Please logout first")
+        raise typer.Exit()
     return provider_info['key']
-    #warning_message("You have an actual session on this bank")
 
 @app.command("login")
 def login(
@@ -91,11 +93,13 @@ def login(
         Note:\n
             Use 'providers get' to see all bank codes on Prometeo and have a faster login.
     """
-    if not code:
-        code  = pick_provider(get_providers())['code']
-    auth_wrapper(username,password,code)
-    success_message("Login successful")    
-
+    try:
+        if not code:
+            code  = pick_provider(get_providers())['code']
+        auth_wrapper(username,password,code)
+        success_message("Login successful")    
+    except Exception as e:
+        error_message(e)
 
 @app.command("logout")
 def logout(
@@ -106,15 +110,23 @@ def logout(
         Logout from your bank account. This will delete all the session data.
     """
     try:
+        sessions=get_value('sessions')
         if not all_flag:
-            sessions=get_value('sessions')
+            if not bank_code:
+                bank_code  = pick_provider(get_providers())['code']
             key= sessions[bank_code]['key']
-            r=requests.get(f'{URL}logout/{key}',headers={'X-API-KEY':get_value('API_KEY')})
+            r=requests.get(f'{URL}logout/',
+                params={'key':key},
+                headers={'X-API-KEY':get_value('API_KEY')}
+                )
             del sessions[bank_code]
             if r.status_code!=200:
                 raise NotAPIKey
             set_value('sessions',sessions)
         else:
+            if not sessions:
+                warning_message('There is no session data to delete')
+                raise typer.Exit
             set_value('sessions',{})
         success_message("Logout successful")
     except (KeyError,NotAPIKey):

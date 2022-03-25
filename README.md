@@ -18,7 +18,7 @@ python -m venv env
 source env/bin/activate
 python -m pip install -r requirements.txt
 ```
-**Note:** The step 2 is for linux. Search the way to enter into your virtualenviroment in your os.
+**Note:** The step 2 is for linux. Search the way to enter into your virtual enviroment in your os.
 
 if the download was successful then test the CLI with
 ```
@@ -34,7 +34,7 @@ First of all, you need to build the docker image
 ```
 docker build -t prometeo ./
 ```
-***Note:*** This maybe take a while
+***Note:*** This may take a while
 
 Then execute this command
 ```
@@ -61,7 +61,7 @@ ___
 
 #### **1.** Setting up:
 First of all, you need to have an API KEY from [**Prometeo**](https://prometeoapi.com/)
-For now we will using a test provider, but you can use the bank provider you want (if you have access to an account, of course).
+For now we be will using a test provider, but you can use the bank provider you want (if you have access to an account, of course).
 
 -**API KEY**: STAIRWAY TO HEAVEN
 -**Username**:12345
@@ -70,6 +70,8 @@ For now we will using a test provider, but you can use the bank provider you wan
 
 ### **2.** Install the CLI
 See the previous section and check with:
+**Note:**: I didn't test the CLI on Windows, if you have any errors, please use the docker option.
+
 ```
 python main.py version
 python main.py --help
@@ -154,6 +156,7 @@ Btw: I know maybe is kinda obvious but [OPTIONS] are optionals parameters.
     - **-u or --user** : Bank username
     - **-p or --pass** : Bank password
     - **-c or --code** : Bank code
+**Note:**Only one session per bank
 - **`auth logout`**  :   Logout from your bank account. This will delete all the session data.
     - **-c or --code** : Bank code where you want to logout
     - **-a or --all** : Delete all the session data
@@ -167,6 +170,7 @@ Btw: I know maybe is kinda obvious but [OPTIONS] are optionals parameters.
     - **-b or --bank** : The code of your bank
     - **-c or --count** : Max movements to show
     - **-o or --order** : Reverse chronological order [False by default] 
+    - **-c or --currency** : The currency code of your credit card [USD by default] 
     - **-f or --filename** : The name of the report file [Not output by default] 
 #### -`init`
 **This command will initialize your bank data ⭐**

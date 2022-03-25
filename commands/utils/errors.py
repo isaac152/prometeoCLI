@@ -16,4 +16,4 @@ class NotTransactionalSession(Exception):
     def __init__(self,field:str)->None:
         self.field=field
     def __str__(self)->str:
-        return f"Please use the {self.field} command first"
+        return f"You need to use the {self.field} at least one time before using movements"
