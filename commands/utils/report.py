@@ -12,6 +12,8 @@ from config import IMAGE_FOLDER
 
 def check_file_name(filename:str)->bool:
     """Validate the file format"""
+    if '.' not in filename:
+      return False
     format_name= filename.split('.')[1].upper()
     if(format_name!='PDF' and format_name!='CSV'):
         error_message('We dont support this file format')
