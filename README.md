@@ -71,6 +71,8 @@ For now we be will using a test provider, but you can use the bank provider you 
 
 -**Provider**:Test provider
 
+**Note:** By default the url is on prometeo sandbox, if you want to change it just modify the URL on config.py 
+
 ### **2.** Install the CLI
 See the previous section and check with:
 **Note:**: I didn't test the CLI on Windows, if you have any errors, please use the docker option.
