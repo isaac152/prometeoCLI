@@ -57,9 +57,10 @@ python main.py --help
 ___
 ## **Usage**
 ___
-#### **Getting Started**
 
-#### **1.** Setting up:
+### **Getting Started**
+
+### **1.** Setting up:
 First of all, you need to have an API KEY from [**Prometeo**](https://prometeoapi.com/)
 For now we be will using a test provider, but you can use the bank provider you want (if you have access to an account, of course).
 
